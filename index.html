@@ -43,6 +43,7 @@ h1,h2,h3,p,figure{margin:0;}
 .banner{display:flex;align-items:center;gap:var(--sp-5);padding:var(--sp-4) var(--sp-8);border-bottom:1px solid var(--line);font-size:var(--t-quiet);background:var(--raised);}
 .banner--caution{border-bottom-color:var(--caution);}
 .banner__text{flex:1 1 auto;min-width:0;}
+.banner>.btn{flex:0 0 auto;white-space:nowrap;}
 .banner__text b{font-weight:var(--w-semibold);}
 .main{grid-area:main;min-width:0;overflow-y:auto;-webkit-overflow-scrolling:touch;}
 .screen{padding:var(--sp-8) var(--sp-8) var(--sp-11);max-width:var(--content-max);margin:0 auto;}
@@ -1128,6 +1129,9 @@ body.sheet-open .toast{top:auto;bottom:var(--sp-9);}
 .sheet>.stack>.btnrow:last-child{position:sticky;bottom:calc(-1 * (var(--sp-9) + env(safe-area-inset-bottom)));z-index:2;background:var(--ground);padding-block:var(--sp-4) calc(var(--sp-9) + env(safe-area-inset-bottom));margin-bottom:calc(-1 * (var(--sp-9) + env(safe-area-inset-bottom)));box-shadow:0 -1px 0 var(--line);}
 .sheet>.stack>.btn--primary.btn--block:nth-last-child(-n+2){position:sticky;bottom:var(--sp-6);z-index:2;box-shadow:var(--e-toast);}
 @media (max-width:379px){.acctcard .goalactions{flex-wrap:wrap;}}
+#ob-install>.btn{align-self:flex-start;}
+.installsteps{margin:0;padding-left:1.4em;display:grid;gap:var(--sp-2);}
+#install-done{margin-top:var(--sp-8);}
 </style>
 <script>
 // Theme and text size are read before first paint, so there is never a flash
@@ -5036,6 +5040,21 @@ ordinals: { one: 'st', two: 'nd', few: 'rd', other: 'th' },
 'sys.install': 'Add to Home Screen before you enter your numbers.',
 'sys.install.how': 'How',
 'sys.install.action': 'Install',
+'install.title': 'Add it to your Home Screen',
+'install.why': 'On a phone, the planner keeps your numbers best when it opens from its own icon. Add it first, then open it from the icon and enter your numbers there.',
+'install.ios.title': 'On an iPhone or iPad (Safari)',
+'install.ios.1': 'Tap the Share button: the square with an arrow pointing up.',
+'install.ios.2': 'Scroll down and tap Add to Home Screen.',
+'install.ios.3': 'Tap Add.',
+'install.ios.4': 'Close Safari and open Budget Planner from its new icon.',
+'install.android.title': 'On an Android phone or tablet (Chrome)',
+'install.android.1': 'Tap the menu: the three dots at the top right.',
+'install.android.2': 'Tap the option that adds it to your Home screen. Depending on your phone, it is called Add to Home screen, Install app, or Install and create shortcut.',
+'install.android.3': 'Open Budget Planner from its new icon.',
+'install.done': 'Got it',
+'ob.install.note': 'On a phone? Add the planner to your Home Screen first, then open it from the icon. Your numbers are kept best there.',
+'data.restore.file': 'Choose a backup file',
+'data.restore.or': 'Or paste the text of a backup:',
 'sys.dismiss': 'Dismiss',
 'sys.backupDue': 'It has been a while since your last backup.',
 'sys.backupDue.action': 'Save one now',
@@ -5370,6 +5389,10 @@ ordinals: { one: 'st', two: 'nd', few: 'rd', other: 'th' },
 'cats.colour.10': 'Coral',
 'cats.colour.11': 'Mint',
 'cats.colour.12': 'Plum',
+'cats.colour.13': 'Tangerine',
+'cats.colour.14': 'Periwinkle',
+'cats.colour.15': 'Olive',
+'cats.colour.16': 'Violet',
 'cats.icon': 'A little picture, if you want one',
 'cats.icon.none': 'No picture',
 'cats.icon.none.mark': 'None',
@@ -10256,7 +10279,7 @@ el('span', { class: 'switch', 'aria-hidden': 'true' }),
 againHelp.button,
 ]),
 againHelp.panel,
-ctx.demoBlocked() ? el('p', { class: 'empty', text: ctx.t('sys.demo.limit', { n: ctx.build.demoLimit || 40 }) }) : null,
+ctx.demoBlocked() ? el('p', { class: 'empty' }, [ctx.t('sys.demo.limit', { n: ctx.build.demoLimit || 40 }), ctx.build.buyUrl ? ' ' : null, ctx.build.buyUrl ? el('a', { href: ctx.build.buyUrl, target: '_blank', rel: 'noopener', text: ctx.t('sys.demo.buy') }) : null]) : null,
 ]);
 return el('div', { class: 'screen stack stack--loose' }, [
 pageIntro(ctx, { text: ctx.t('add.intro'), helpKey: 'help.add', id: 'add-intro' }),
@@ -10335,7 +10358,7 @@ el('p', { class: 'small quiet', text: ctx.t('add.cats.help') }),
 el('div', { class: 'field' }, [el('label', { class: 'field__label', for: 'spendsheet-note', text: ctx.t('add.note.label') }), note]),
 el('div', { class: 'field' }, [el('span', { class: 'field__label', text: ctx.t('add.date.label') }), dateRow, picker]),
 accountPicker(ctx, { id: 'spendsheet-account', value: null, onChange: (id) => { accountId = id; } }),
-ctx.demoBlocked() ? el('p', { class: 'empty', text: ctx.t('sys.demo.limit', { n: ctx.build.demoLimit || 40 }) }) : null,
+ctx.demoBlocked() ? el('p', { class: 'empty' }, [ctx.t('sys.demo.limit', { n: ctx.build.demoLimit || 40 }), ctx.build.buyUrl ? ' ' : null, ctx.build.buyUrl ? el('a', { href: ctx.build.buyUrl, target: '_blank', rel: 'noopener', text: ctx.t('sys.demo.buy') }) : null]) : null,
 extra,
 ];
 },
@@ -14157,7 +14180,35 @@ el('button', { class: 'btn btn--plain', type: 'button', text: ctx.t('data.restor
 });
 return true;
 }
+function openInstallSheet(ctx) {
+const steps = (keys) => el('ol', { class: 'prose installsteps' }, keys.map((k) => el('li', { text: ctx.t(k) })));
+return openSheet(ctx, {
+title: ctx.t('install.title'),
+build: (api) => [
+el('p', { class: 'prose', text: ctx.t('install.why') }),
+el('h3', { class: 'sectiontitle', text: ctx.t('install.ios.title') }),
+steps(['install.ios.1', 'install.ios.2', 'install.ios.3', 'install.ios.4']),
+el('h3', { class: 'sectiontitle', text: ctx.t('install.android.title') }),
+steps(['install.android.1', 'install.android.2', 'install.android.3']),
+el('button', { class: 'btn btn--primary btn--block', type: 'button', id: 'install-done', text: ctx.t('install.done'), onclick: () => api.close() }),
+],
+});
+}
 function openPasteRestore(ctx) {
+const fileInput = el('input', {
+type: 'file', accept: '.json,application/json,text/plain', class: 'sr', id: 'restore-file-input',
+onchange: (event) => {
+const file = event.target.files && event.target.files[0];
+if (!file) return;
+const reader = new FileReader();
+reader.onload = async () => {
+const text = String(reader.result);
+event.target.value = '';
+if (!(await openRestoreSheet(ctx, text))) ctx.toast(ctx.t('data.restore.err.unreadable'));
+};
+reader.readAsText(file);
+},
+});
 const area = el('textarea', {
 class: 'textarea money', rows: '8', id: 'restore-paste',
 'aria-label': ctx.t('data.restore.paste.label'),
@@ -14168,6 +14219,9 @@ return openSheet(ctx, {
 title: ctx.t('data.restore.paste.title'),
 tall: true,
 build: (api) => [
+el('button', { class: 'btn btn--outline btn--block', type: 'button', id: 'restore-file', text: ctx.t('data.restore.file'), onclick: () => fileInput.click() }),
+fileInput,
+el('p', { class: 'small quiet prose', text: ctx.t('data.restore.or') }),
 el('p', { class: 'small quiet prose', text: ctx.t('data.restore.paste.body') }),
 el('label', { class: 'field__label', for: 'restore-paste', text: ctx.t('data.restore.paste.label') }),
 area,
@@ -14367,6 +14421,10 @@ function onboardingScreen(ctx, { createAmountEntry, fresh = true }) {
       append(body, [
         el('h1', { class: 'bigtitle', text: ctx.t('ob.welcome.title') }),
         el('p', { class: 'prose', text: ctx.t('ob.welcome.body') }),
+        ctx.installHint && ctx.installHint() ? el('div', { class: 'note stack stack--tight', id: 'ob-install' }, [
+          el('p', { class: 'prose', text: ctx.t('ob.install.note') }),
+          el('button', { class: 'btn btn--outline btn--small', type: 'button', id: 'ob-install-how', text: ctx.t('sys.install.how'), onclick: () => openInstallSheet(ctx) }),
+        ]) : null,
       ]);
       append(foot, [
         el('button', { class: 'btn btn--primary btn--block', type: 'button', text: ctx.t('ob.welcome.start'), onclick: () => { obState.step = 'setup'; paint(); } }),
@@ -16612,9 +16670,12 @@ const SIDEBAR_GROUPS = [
 const FILL_ROUTES = new Set(SIDEBAR_GROUPS.flatMap((g) => g.paths).filter((p) => p !== '/settings'));
 function start(build) {
 const demo = build.target === 'demo';
+let installPrompt = null;
+window.addEventListener('beforeinstallprompt', (event) => { event.preventDefault(); installPrompt = event; });
 const adapter = demo ? memoryAdapter() : pickAdapter();
 const store = new Store({ adapter, buildId: build.buildId, today: todayFrom() });
 const ctx = createContext({ store, build });
+ctx.installHint = () => build.target === 'hosted' && isPhoneLike() && !isInstalled();
 const root = document.getElementById('app');
 const shell = el('div', { class: 'app' });
 const topbar = el('header', { class: 'topbar' });
@@ -16932,7 +16993,11 @@ dismissible: true, onDismiss: () => { dismissedBanners.add('backup'); render(); 
 });
 }
 if (build.target === 'demo') {
-list.push({ tone: 'accent', text: ctx.t('sys.demo.session') });
+const buy = build.buyUrl ? {
+actionLabel: ctx.t('sys.demo.buy'),
+onAction: () => { window.open(build.buyUrl, '_blank', 'noopener'); },
+} : {};
+list.push({ tone: 'accent', text: ctx.t('sys.demo.session'), ...buy });
 }
 if (build.target === 'standalone' && !ctx.settings().installNoteSeen && !dismissedBanners.has('firstrun') && currentRoute() === '/today') {
 list.push({
@@ -16944,6 +17009,17 @@ if (build.target !== 'standalone' && isInAppBrowser() && !dismissedBanners.has('
 list.push({
 tone: 'caution', text: ctx.t('sys.inapp'), dismissible: true,
 onDismiss: () => { dismissedBanners.add('inapp'); render(); },
+});
+}
+if (ctx.installHint() && !dismissedBanners.has('install')) {
+list.push({
+tone: 'caution', text: ctx.t('sys.install'),
+actionLabel: installPrompt ? ctx.t('sys.install.action') : ctx.t('sys.install.how'),
+onAction: async () => {
+if (installPrompt) { const ev = installPrompt; installPrompt = null; ev.prompt(); try { await ev.userChoice; } catch {  } render(); }
+else openInstallSheet(ctx);
+},
+dismissible: true, onDismiss: () => { dismissedBanners.add('install'); render(); },
 });
 }
 if (window.__abpUpdateReady && !dismissedBanners.has('update')) {
@@ -17207,8 +17283,15 @@ const bills = ctx.settleAutopay();
 const debts = ctx.settleDebtAutopay();
 if (bills || debts) render();
 });
-window.addEventListener('error', (event) => showFatal(ctx, root, event.error || event.message));
-window.addEventListener('unhandledrejection', (event) => showFatal(ctx, root, event.reason));
+const noise = (msg) => /^(Script error\.?|ResizeObserver loop)/i.test(String(msg || ''));
+window.addEventListener('error', (event) => {
+if (!event.error && (noise(event.message) || !event.filename)) { console.warn('ignored:', event.message); return; }
+showFatal(ctx, root, event.error || event.message);
+});
+window.addEventListener('unhandledrejection', (event) => {
+if (!(event.reason instanceof Error)) { console.warn('ignored rejection:', event.reason); return; }
+showFatal(ctx, root, event.reason);
+});
 render();
 wireQuickActions(ctx);
 ctx.routes = Object.keys(ROUTES);
@@ -17238,12 +17321,19 @@ fatalShown = true;
 clear(root);
 root.appendChild(errorScreen(ctx, error));
 }
+function isPhoneLike() {
+const ua = String(navigator.userAgent || '');
+return /iPhone|iPad|iPod|Android/i.test(ua) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+}
+function isInstalled() {
+return !!((window.matchMedia && window.matchMedia('(display-mode: standalone)').matches) || window.navigator.standalone === true);
+}
 function isInAppBrowser() {
 const ua = String(navigator.userAgent || '');
 return /FBAN|FBAV|Instagram|Line\/|Twitter|LinkedInApp|TikTok|Etsy|Pinterest|Snapchat/i.test(ua);
 }
 (function(){
-start({"target":"demo","channel":"release","buildId":"202610061403","version":"0.1.0","supportEmail":"info@theorganizedclub.com","demoLimit":40,"buyUrl":""});
+start({"target":"demo","channel":"release","buildId":"5d2c80b","version":"0.1.0","supportEmail":"info@theorganizedclub.com","demoLimit":40,"buyUrl":""});
 })();
 })();</script>
 </body>
